@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS invitations;
+DROP TABLE IF EXISTS coupons;
+DROP TABLE IF EXISTS users;
