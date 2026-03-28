@@ -92,12 +92,10 @@ export default function CouponsTimelinePage() {
     setIsDrawing(true);
     
     try {
-      // API Call di background pakai fetchAPI
       const res = await fetchAPI("/coupons/draw", { method: "POST" });
       if (!res.ok) throw new Error("Gagal mengundi");
       const drawData = await res.json();
 
-      // Efek putar teks Roulette selama 3 detik
       let counter = 0;
       const gachaInterval = setInterval(() => {
         setGachaText(gachaPhrases[counter % gachaPhrases.length]);
@@ -108,13 +106,11 @@ export default function CouponsTimelinePage() {
         clearInterval(gachaInterval);
         setIsDrawing(false);
         
-        // Ambil state terbaru pakai fetchAPI
         const stateRes = await fetchAPI("/coupons/state");
         if (stateRes.ok) {
           const newState = await stateRes.json();
           setState(newState);
 
-          // Cari kupon yang baru saja diundi dan tampilkan di Modal Reveal
           const drawn = newState.unlocked_coupons.find((c: Coupon) => c.id === drawData.id);
           if (drawn) setRevealedCoupon(drawn);
         }
@@ -129,7 +125,6 @@ export default function CouponsTimelinePage() {
   const executeRedeem = async () => {
     if (!couponToRedeem) return;
     try {
-      // API Call pakai fetchAPI
       const res = await fetchAPI(`/coupons/${couponToRedeem.id}/redeem`, { method: "POST" });
       if (res.ok) {
         setCouponToRedeem(null);
@@ -140,13 +135,12 @@ export default function CouponsTimelinePage() {
     }
   };
 
-  // Helper Format Tanggal
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  if (loading) return <div className="min-h-screen bg-stone-50 flex items-center justify-center">Loading the vault...</div>;
+  if (loading) return <div className="min-h-screen bg-stone-50 flex items-center justify-center font-serif text-stone-500 italic">Opening the vault...</div>;
 
   return (
     <div className="min-h-screen bg-stone-50 p-6 md:p-12 font-sans overflow-x-hidden text-stone-800">
@@ -171,13 +165,11 @@ export default function CouponsTimelinePage() {
       {revealedCoupon && (
         <div className="fixed inset-0 z-[150] flex flex-col items-center justify-center bg-stone-900/80 backdrop-blur-sm p-4 animate-fade-in">
           <div className="text-center mb-8 animate-fade-in-up">
-            <h2 className="text-3xl font-serif text-white tracking-widest uppercase mb-2">Coupon Acquired!</h2>
-            <p className="text-stone-300">Week {revealedCoupon.drawn_week} surprise is here.</p>
+            <h2 className="text-3xl font-serif text-white tracking-widest uppercase mb-2">A Gift Unveiled</h2>
+            <p className="text-stone-300">Your surprise for Week {revealedCoupon.drawn_week} has arrived.</p>
           </div>
 
-          {/* Ticket Design untuk Reveal */}
           <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
-            {/* Cutouts pinggir */}
             <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-stone-900 rounded-full"></div>
             <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-stone-900 rounded-full"></div>
             
@@ -190,7 +182,7 @@ export default function CouponsTimelinePage() {
                 onClick={() => setRevealedCoupon(null)}
                 className="px-8 py-3 bg-stone-800 text-white rounded-full font-bold uppercase tracking-widest hover:bg-stone-700 transition-all hover:scale-105"
               >
-                Accept Coupon
+                Accept Token
               </button>
             </div>
           </div>
@@ -206,14 +198,14 @@ export default function CouponsTimelinePage() {
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
             </div>
-            <h3 className="text-2xl font-serif text-stone-800 mb-2">Use this coupon?</h3>
-            <p className="text-stone-500 mb-8 text-sm">Once used, this action cannot be undone. Paisen will have to fulfill it!</p>
+            <h3 className="text-2xl font-serif text-stone-800 mb-2">Claim this moment?</h3>
+            <p className="text-stone-500 mb-8 text-sm">Once claimed, this action is permanent. Prepare for your wish to be granted!</p>
             <div className="flex flex-col gap-3">
               <button onClick={executeRedeem} className="w-full py-3 bg-stone-800 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-stone-700 transition-all">
-                Yes, Use It Now
+                Yes, Claim It
               </button>
               <button onClick={() => setCouponToRedeem(null)} className="w-full py-3 bg-stone-100 text-stone-600 rounded-xl font-bold uppercase tracking-wider hover:bg-stone-200 transition-all">
-                Cancel
+                Keep for Later
               </button>
             </div>
           </div>
@@ -227,9 +219,9 @@ export default function CouponsTimelinePage() {
       <div className="max-w-4xl mx-auto flex justify-between items-center mb-16 relative z-10">
         <button onClick={() => router.push("/hub")} className="text-stone-500 hover:text-stone-800 transition-colors flex items-center gap-2 font-medium">
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Back
+          Sanctuary
         </button>
-        <h1 className="text-2xl md:text-3xl font-serif text-stone-800 uppercase tracking-widest">The Coupons</h1>
+        <h1 className="text-2xl md:text-3xl font-serif text-stone-800 uppercase tracking-widest">The Vault</h1>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-16 pb-20">
@@ -239,16 +231,15 @@ export default function CouponsTimelinePage() {
           {state?.unlocked_coupons?.map((coupon, index) => (
             <div key={coupon.id} className="relative pl-8 md:pl-12 animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
               
-              {/* Bulatan Timeline */}
               <div className="absolute -left-[11px] top-8 w-5 h-5 rounded-full bg-stone-800 border-4 border-stone-50 shadow-sm"></div>
               
-              {/* DESAIN TICKET MODERN */}
+              {/* DESAIN TICKET YANG DIPERBAIKI */}
               <div className={`relative flex flex-col md:flex-row rounded-2xl overflow-hidden transition-all duration-300 shadow-lg ${
                 coupon.is_redeemed ? "bg-stone-200/50 opacity-70 grayscale-[30%]" : "bg-white border border-stone-200 hover:shadow-xl hover:-translate-y-1"
               }`}>
                 
-                {/* Bagian Kiri: Header & Teks */}
-                <div className="flex-1 p-6 md:p-8 relative">
+                {/* Left Side: Content */}
+                <div className="flex-1 p-6 md:p-8">
                   <div className="flex flex-wrap items-center gap-3 mb-4">
                     <span className="text-sm font-bold uppercase tracking-widest text-stone-800 bg-stone-100 px-3 py-1 rounded-md">
                       Week {coupon.drawn_week}
@@ -260,38 +251,36 @@ export default function CouponsTimelinePage() {
                     {coupon.is_redeemed && (
                       <span className="text-xs bg-stone-800 text-white px-3 py-1 rounded-full font-medium tracking-wide flex items-center gap-1">
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        Redeemed
+                        Claimed
                       </span>
                     )}
                   </div>
                   <h3 className={`text-2xl font-serif mb-2 ${coupon.is_redeemed ? "text-stone-500 line-through" : "text-stone-800"}`}>
                     {coupon.title}
                   </h3>
-                  <p className="text-stone-600 leading-relaxed text-sm md:text-base pr-4">
+                  <p className="text-stone-600 leading-relaxed text-sm md:text-base">
                     {coupon.description}
                   </p>
                 </div>
 
-                {/* Garis Putus-putus Pemisah Tiket */}
-                <div className="hidden md:flex flex-col items-center justify-center relative w-8 border-l-2 border-dashed border-stone-200 my-4">
-                  <div className="absolute -top-6 w-6 h-6 bg-stone-50 rounded-full"></div>
-                  <div className="absolute -bottom-6 w-6 h-6 bg-stone-50 rounded-full"></div>
+                {/* Perforated Line Divider */}
+                <div className="hidden md:block w-0 border-l-2 border-dashed border-stone-200 relative my-4">
+                   <div className="absolute -top-6 -left-3 w-6 h-6 bg-stone-50 rounded-full"></div>
+                   <div className="absolute -bottom-6 -left-3 w-6 h-6 bg-stone-50 rounded-full"></div>
+                </div>
+                <div className="md:hidden h-0 border-t-2 border-dashed border-stone-200 relative mx-4">
+                   <div className="absolute -left-6 -top-3 w-6 h-6 bg-stone-50 rounded-full"></div>
+                   <div className="absolute -right-6 -top-3 w-6 h-6 bg-stone-50 rounded-full"></div>
                 </div>
 
-                {/* Garis Putus-putus Mobile */}
-                <div className="md:hidden w-full h-8 relative flex items-center justify-center border-t-2 border-dashed border-stone-200 mx-4">
-                  <div className="absolute -left-6 w-6 h-6 bg-stone-50 rounded-full"></div>
-                  <div className="absolute -right-6 w-6 h-6 bg-stone-50 rounded-full"></div>
-                </div>
-
-                {/* Bagian Kanan: Aksi */}
-                <div className="bg-stone-50 md:bg-transparent p-6 md:p-8 flex items-center justify-center min-w-[160px]">
+                {/* Right Side: Action Button */}
+                <div className="bg-stone-50 md:bg-transparent p-6 md:p-8 flex items-center justify-center md:min-w-[200px]">
                   {!coupon.is_redeemed ? (
                     <button
                       onClick={() => setCouponToRedeem(coupon)}
-                      className="w-full md:w-auto px-6 py-3 bg-stone-800 text-white rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-stone-700 hover:shadow-lg transition-all"
+                      className="w-full px-6 py-3 bg-stone-800 text-white rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-stone-700 hover:shadow-lg transition-all"
                     >
-                      Use Coupon
+                      Redeem
                     </button>
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-stone-200 flex items-center justify-center text-stone-400">
@@ -305,7 +294,7 @@ export default function CouponsTimelinePage() {
           ))}
 
           {state?.unlocked_coupons?.length === 0 && (
-            <div className="pl-8 md:pl-12 text-stone-400 italic">Coupon collection is empty. Draw your first one!</div>
+            <div className="pl-8 md:pl-12 text-stone-400 italic">The vault is empty. Unveil your first surprise.</div>
           )}
         </div>
 
@@ -314,26 +303,27 @@ export default function CouponsTimelinePage() {
           
           {state?.can_draw ? (
             <div className="p-8 md:p-12 rounded-3xl border border-stone-200 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden">
-              {/* Aksen background blur estetik */}
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-stone-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
               
               <div className="w-16 h-16 bg-stone-100 text-stone-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="5" rx="1"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
               </div>
-              <h3 className="text-2xl font-serif text-stone-800 mb-2 relative z-10">A new coupon is available!</h3>
-              <p className="text-stone-500 mb-8 relative z-10">Tap the button below to draw your surprise for Week {(state?.unlocked_coupons?.length || 0) + 1}.</p>
+              <h3 className="text-2xl font-serif text-stone-800 mb-2 relative z-10">A new gift awaits</h3>
+              <p className="text-stone-500 mb-8 relative z-10">Tap below to reveal your token for Week {(state?.unlocked_coupons?.length || 0) + 1}.</p>
               <button 
                 onClick={handleDraw}
                 className="px-10 py-4 bg-stone-800 text-white rounded-full font-bold tracking-widest uppercase hover:bg-stone-700 hover:shadow-xl transition-all transform hover:scale-105 active:scale-95 relative z-10"
               >
-                Draw Coupon
+                Draw Token
               </button>
             </div>
-          ) : state?.total_coupons === state?.unlocked_coupons?.length ? (
+            
+          ) : (state?.total_coupons ?? 0) === (state?.unlocked_coupons?.length ?? 0) && (state?.total_coupons ?? 0) > 0 ? (
+            
             <div className="p-8 rounded-3xl bg-stone-100 border border-stone-200 text-stone-500 flex flex-col items-center">
               <svg className="w-10 h-10 mb-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <h3 className="text-xl font-serif text-stone-800 mb-2">All Coupons Unlocked!</h3>
-              <p>You have collected all the surprises.</p>
+              <h3 className="text-xl font-serif text-stone-800 mb-2">Vault Emptied</h3>
+              <p>You have collected every memory and surprise we stored.</p>
             </div>
           ) : (
             <div className="p-8 md:p-12 rounded-3xl bg-stone-900 text-white shadow-2xl relative overflow-hidden">
@@ -341,11 +331,11 @@ export default function CouponsTimelinePage() {
               <div className="flex justify-center mb-6 text-stone-500">
                 <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
-              <h3 className="text-sm font-bold tracking-widest uppercase text-stone-400 mb-4">Next Drop In</h3>
+              <h3 className="text-sm font-bold tracking-widest uppercase text-stone-400 mb-4">Next Gift In</h3>
               <div className="text-4xl md:text-6xl font-serif font-medium tracking-wider mb-2 font-mono tabular-nums text-stone-100 drop-shadow-md">
-                {timeLeft || "Calculating..."}
+                {timeLeft || "Unlocking..."}
               </div>
-              <p className="text-stone-400 mt-4 italic text-sm">Patience... good things come to those who wait.</p>
+              <p className="text-stone-400 mt-4 italic text-sm">Patience... the best things are worth waiting for.</p>
             </div>
           )}
 

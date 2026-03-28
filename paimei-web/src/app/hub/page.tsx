@@ -15,7 +15,7 @@ export default function HubPage() {
   // State untuk Ulang Tahun
   const [isBirthday, setIsBirthday] = useState(false);
   const [timeObj, setTimeObj] = useState({ d: '--', h: '--', m: '--', s: '--' });
-  const [isShaking, setIsShaking] = useState(false); // State untuk animasi getar
+  const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
     // 1. Ambil data user yang login
@@ -70,13 +70,11 @@ export default function HubPage() {
     } else {
       addToast("Patience... the time hasn't come yet!", "warning");
       
-      // Memicu animasi CSS Shake
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
 
-      // Memicu getaran (Haptic Feedback) di HP jika didukung browser
       if (typeof window !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]); // Getar 100ms, jeda 50ms, getar 100ms
+        navigator.vibrate([100, 50, 100]); 
       }
     }
   };
@@ -99,7 +97,7 @@ export default function HubPage() {
             Welcome Back, {currentUser}
           </p>
           <h1 className="text-4xl md:text-6xl font-serif text-stone-800 leading-tight">
-            A digital sanctuary <br className="hidden md:block" /> built just for us.
+            A quiet sanctuary <br className="hidden md:block" /> preserving our eternity.
           </h1>
           <div className="w-16 h-1 bg-stone-300 mx-auto rounded-full"></div>
           <p className="text-lg md:text-xl text-stone-500 italic font-serif">
@@ -113,7 +111,6 @@ export default function HubPage() {
           {/* CARD 1: Anniversary */}
           <div
             onClick={() => router.push("/anniversary")}
-            // Tambahkan active:scale-[0.98] untuk efek tertekan
             className="group relative flex flex-col p-8 bg-white rounded-[2rem] border border-stone-200 shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 transition-all duration-300 cursor-pointer overflow-hidden"
           >
             <div className="w-14 h-14 bg-stone-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-stone-100 transition-all">
@@ -121,7 +118,7 @@ export default function HubPage() {
             </div>
             <h3 className="text-2xl font-serif text-stone-800 mb-2">The 4-Year Journey</h3>
             <p className="text-stone-500 text-sm leading-relaxed mb-8 flex-1">
-              Sebuah galeri interaktif yang merangkum cerita kita dari titik nol hingga hari ini.
+              An interactive gallery capturing our journey, from the very first spark to the love we share today.
             </p>
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-stone-400 group-hover:text-stone-800 transition-colors">
               Enter Chapter 
@@ -132,7 +129,6 @@ export default function HubPage() {
           {/* CARD 2: Love Coupons */}
           <div
             onClick={() => isCouponsUnlocked && router.push("/coupons")}
-            // Tambahkan active:scale-[0.98] jika sudah di-unlock
             className={`group relative flex flex-col p-8 rounded-[2rem] border transition-all duration-300 overflow-hidden ${
               isCouponsUnlocked 
                 ? "bg-white border-stone-200 shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 cursor-pointer" 
@@ -151,8 +147,8 @@ export default function HubPage() {
             </h3>
             <p className={`text-sm leading-relaxed mb-8 flex-1 ${isCouponsUnlocked ? "text-stone-500" : "text-stone-400"}`}>
               {isCouponsUnlocked 
-                ? "Koleksi hadiah mingguan eksklusif yang bisa kamu undi secara acak."
-                : "Selesaikan Chapter 1 terlebih dahulu untuk membuka akses ke area ini."}
+                ? "An exclusive collection of weekly tokens, ready to be drawn whenever you desire."
+                : "Unlock the first chapter of our story to reveal the secrets hidden within."}
             </p>
             <div className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest transition-colors ${isCouponsUnlocked ? "text-stone-400 group-hover:text-stone-800" : "text-stone-400/50"}`}>
               {isCouponsUnlocked ? "Open Vault" : "Locked"}
@@ -165,7 +161,6 @@ export default function HubPage() {
           {/* CARD 3: Birthday (Chapter 20) */}
           <div
             onClick={handleBirthdayClick}
-            // Tambahkan animasi getar (animate-shake) & efek tertekan (active:scale-[0.98])
             className={`group relative flex flex-col p-8 rounded-[2rem] border transition-all duration-300 overflow-hidden cursor-pointer active:scale-[0.98] active:translate-y-0 ${
               isBirthday 
                 ? "bg-stone-900 border-stone-800 shadow-2xl hover:-translate-y-1" 
@@ -188,10 +183,10 @@ export default function HubPage() {
             
             <div className={`text-sm leading-relaxed mb-8 flex-1 ${isBirthday ? "text-stone-300" : "text-stone-500"}`}>
               {isBirthday 
-                ? "Selamat ulang tahun, Amey! Ada undangan spesial yang menunggumu di dalam."
+                ? "Happy birthday, Amey! A special, secret invitation is waiting for you inside."
                 : (
                   <div className="space-y-4">
-                    <p>Kejutan rahasia yang akan terbuka secara otomatis pada tanggal 31 Maret.</p>
+                    <p>A secret surprise safely locked away, set to unfold automatically on March 31st.</p>
                     
                     {/* UI COUNTDOWN MODERN */}
                     <div>

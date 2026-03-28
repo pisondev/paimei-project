@@ -7,14 +7,12 @@ export async function createSession(token: string) {
   const cookieStore = await cookies();
   
   cookieStore.set("paimei_session", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Otomatis true saat di VPS
-    sameSite: "lax", // Penting agar cookie terbaca mulus setelah redirect middleware
-    maxAge: 60 * 60 * 24, // Masa aktif 24 jam
+    httpOnly: false, // UBAH INI MENJADI FALSE AGAR BISA DIBACA FETCH API!
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24,
     path: "/",
   });
 
-  // Eksekusi redirect langsung dari Server Edge!
-  // Ini membersihkan cache client dan mencegah infinite loop yang bikin RAM jebol.
   redirect("/hub");
 }
