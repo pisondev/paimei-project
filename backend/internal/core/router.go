@@ -3,6 +3,7 @@ package core
 import (
 	"database/sql"
 
+	"paimei-backend/internal/core/middleware" // Import middleware yang baru dibuat
 	"paimei-backend/internal/modules/auth"
 	"paimei-backend/internal/modules/coupons"
 	"paimei-backend/internal/modules/invitations"
@@ -13,16 +14,24 @@ import (
 func SetupRoutes(app *fiber.App, db *sql.DB) {
 	api := app.Group("/api")
 
-	// Routes Auth
-	api.Post("/login", auth.HandleLogin(db))
+	// ==========================================
+	// 1. PUBLIC ROUTES (Tanpa Token)
+	// ==========================================
+	// Catatan: Pastikan nama fungsinya auth.Login(db) sesuai dengan handler.go yang baru
+	api.Post("/login", auth.Login(db))
+	// ==========================================
+	// 2. PROTECTED ROUTES (Wajib Token JWT)
+	// ==========================================
+	// Semua route di dalam grup "protected" ini akan dicegat oleh middleware.Protected()
+	protected := api.Group("/", middleware.Protected())
 
 	// Routes Coupons
-	api.Get("/coupons/state", coupons.GetCouponState(db))
-	api.Post("/coupons/draw", coupons.DrawRandomCoupon(db))
-	api.Post("/coupons/:id/redeem", coupons.RedeemCoupon(db))
+	protected.Get("/coupons/state", coupons.GetCouponState(db))
+	protected.Post("/coupons/draw", coupons.DrawRandomCoupon(db))
+	protected.Post("/coupons/:id/redeem", coupons.RedeemCoupon(db))
 
 	// Routes Invitations
-	api.Get("/invitation", invitations.GetInvitation(db))
-	api.Post("/invitation/accept", invitations.AcceptInvitation(db))
-	api.Post("/invitation/paisen", invitations.UpdatePaisenOutfit(db))
+	protected.Get("/invitation", invitations.GetInvitation(db))
+	protected.Post("/invitation/accept", invitations.AcceptInvitation(db))
+	protected.Post("/invitation/paisen", invitations.UpdatePaisenOutfit(db))
 }

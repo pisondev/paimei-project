@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchAPI } from "@/lib/api";
 
 interface Coupon {
   id: number;
@@ -43,9 +44,11 @@ export default function CouponsTimelinePage() {
 
   const fetchState = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/coupons/state");
-      const data = await res.json();
-      setState(data);
+      const res = await fetchAPI("/coupons/state");
+      if (res.ok) {
+        const data = await res.json();
+        setState(data);
+      }
     } catch (error) {
       console.error("Gagal mengambil state kupon", error);
     } finally {
@@ -89,8 +92,9 @@ export default function CouponsTimelinePage() {
     setIsDrawing(true);
     
     try {
-      // API Call di background
-      const res = await fetch("http://localhost:8080/api/coupons/draw", { method: "POST" });
+      // API Call di background pakai fetchAPI
+      const res = await fetchAPI("/coupons/draw", { method: "POST" });
+      if (!res.ok) throw new Error("Gagal mengundi");
       const drawData = await res.json();
 
       // Efek putar teks Roulette selama 3 detik
@@ -104,14 +108,16 @@ export default function CouponsTimelinePage() {
         clearInterval(gachaInterval);
         setIsDrawing(false);
         
-        // Ambil state terbaru untuk mendapatkan data kupon yang baru ditarik
-        const stateRes = await fetch("http://localhost:8080/api/coupons/state");
-        const newState = await stateRes.json();
-        setState(newState);
+        // Ambil state terbaru pakai fetchAPI
+        const stateRes = await fetchAPI("/coupons/state");
+        if (stateRes.ok) {
+          const newState = await stateRes.json();
+          setState(newState);
 
-        // Cari kupon yang baru saja diundi dan tampilkan di Modal Reveal
-        const drawn = newState.unlocked_coupons.find((c: Coupon) => c.id === drawData.id);
-        if (drawn) setRevealedCoupon(drawn);
+          // Cari kupon yang baru saja diundi dan tampilkan di Modal Reveal
+          const drawn = newState.unlocked_coupons.find((c: Coupon) => c.id === drawData.id);
+          if (drawn) setRevealedCoupon(drawn);
+        }
 
       }, 3000);
     } catch (error) {
@@ -123,7 +129,8 @@ export default function CouponsTimelinePage() {
   const executeRedeem = async () => {
     if (!couponToRedeem) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/coupons/${couponToRedeem.id}/redeem`, { method: "POST" });
+      // API Call pakai fetchAPI
+      const res = await fetchAPI(`/coupons/${couponToRedeem.id}/redeem`, { method: "POST" });
       if (res.ok) {
         setCouponToRedeem(null);
         fetchState();
