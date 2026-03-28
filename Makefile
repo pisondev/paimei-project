@@ -1,4 +1,5 @@
-DB_URL=postgresql://paisen:secretpassword@localhost:5432/paimei_db?sslmode=disable
+# Ubah 5432 menjadi 5438 di bagian localhost:5438
+DB_URL=postgresql://paisen:secretpassword@localhost:5438/paimei_db?sslmode=disable
 
 .PHONY: run-all stop-all migrate-create migrate-up migrate-down
 

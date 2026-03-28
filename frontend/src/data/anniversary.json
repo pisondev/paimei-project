@@ -1,0 +1,47 @@
+[
+  {
+    "id": 0,
+    "year": "Prologue",
+    "headerTitle": "Chapter 0: The Spark",
+    "staticImg": "/year0-static.jpg",
+    "gifImg": "/year0-active.gif",
+    "title": "How It All Started",
+    "message": "Titik nol kita. Momen di mana dua jalan yang berbeda akhirnya bersinggungan. Ingat saat pertama kali kita memutuskan untuk memulai cerita ini?"
+  },
+  {
+    "id": 1,
+    "year": "Year 1",
+    "headerTitle": "Chapter I: First Steps",
+    "staticImg": "/year1-static.jpg",
+    "gifImg": "/year1-active.gif",
+    "title": "First Steps",
+    "message": "Tahun pertama. Semuanya terasa baru, mendebarkan, dan penuh tawa. Fase di mana kita masih malu-malu tapi ingin selalu menghabiskan waktu bersama."
+  },
+  {
+    "id": 2,
+    "year": "Year 2",
+    "headerTitle": "Chapter II: Growing Stronger",
+    "staticImg": "/year2-static.jpg",
+    "gifImg": "/year2-active.gif",
+    "title": "Growing Stronger",
+    "message": "Tahun kedua, kita mulai saling memahami lebih dalam. Melewati masa-masa penyesuaian, tapi justru rintangan itu yang membuat fondasi kita makin tak tergoyahkan."
+  },
+  {
+    "id": 3,
+    "year": "Year 3",
+    "headerTitle": "Chapter III: Building Dreams",
+    "staticImg": "/year3-static.jpg",
+    "gifImg": "/year3-active.gif",
+    "title": "Building Dreams",
+    "message": "Tahun ketiga, kita tidak cuma bermimpi, tapi mulai membangunnya. Merintis Tierratie dari awal adalah salah satu petualangan dan keputusan terbaik kita."
+  },
+  {
+    "id": 4,
+    "year": "Present",
+    "headerTitle": "Chapter IV: Us, Now",
+    "staticImg": "/year4-static.jpg",
+    "gifImg": "/year4-active.gif",
+    "title": "Us, Right Now",
+    "message": "Empat tahun berlalu. Melihat kita yang sekarang... kamu bukan sekadar pacarku. Kamu adalah rekan bisnis terbaik, teman debat yang paling sepadan, dan rumah tempatku selalu pulang."
+  }
+]
