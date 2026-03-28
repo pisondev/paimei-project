@@ -1,8 +1,8 @@
 // frontend/src/lib/api.ts
 
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
+const NEXT_PUBLIC_API_URL = process.env.NODE_ENV === 'development' 
   ? 'http://localhost:8080/api' 
-  : 'https://paimei-api.tierratie.com/api'; // Ganti dengan URL backend-mu nanti
+  : 'https://api-paimei.tierratie.com/api'; // Mengarah ke backend Go di VPS
 
 // Fungsi untuk mengambil token dari Cookie Browser
 const getAuthToken = () => {
@@ -23,7 +23,7 @@ export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${NEXT_PUBLIC_API_URL}${endpoint}`, {
     ...options,
     headers,
   });
