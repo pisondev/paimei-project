@@ -1,40 +1,35 @@
 services:
-  db:
+  # 1. DATABASE PAIMEI
+  paimei-db:
     image: postgres:16-alpine
+    container_name: paimei-db-container
     environment:
-      POSTGRES_USER: paisen
-      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_USER: user_paimei
+      POSTGRES_PASSWORD: dbpaimei123  
       POSTGRES_DB: paimei_db
     ports:
-      - "5438:5432"
+      - "5435:5432" # PORT BARU
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./db-data:/var/lib/postgresql/data
 
-  backend:
-    build:
-      context: ./paimei-api
-      dockerfile: Dockerfile
+  # 2. BACKEND API (Go Fiber)
+  paimei-api:
+    build: ./paimei-api
+    container_name: paimei-api-container
+    restart: always
     ports:
-      - "8080:8080"
-    environment:
-      - DB_HOST=db
-      - DB_USER=paisen
-      - DB_PASSWORD=secretpassword
-      - DB_NAME=paimei_db
-      - DB_PORT=5432
+      - "3006:3000" # PORT BARU UNTUK API
     depends_on:
-      - db
+      - paimei-db
+    env_file:
+      - ./paimei-api/.env
 
-#  frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile: Dockerfile
-#    ports:
-#      - "3000:3000"
-#    environment:
-#      - NEXT_PUBLIC_API_URL=http://localhost:8080
-#    depends_on:
-#      - backend
-
-volumes:
-  pgdata:
+  # 3. WEB (Next.js)
+  paimei-web:
+    build: ./paimei-web
+    container_name: paimei-web-container
+    restart: always
+    ports:
+      - "3008:3000" # PORT BARU UNTUK WEB
+    env_file:
+      - ./paimei-web/.env.local
