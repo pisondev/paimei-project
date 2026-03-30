@@ -11,10 +11,10 @@ stop-all:
 
 migrate-create:
 	@read -p "Enter migration name: " name; \
-	migrate create -ext sql -dir backend/internal/core/db/migrations -seq $$name
+	migrate create -ext sql -dir paimei-api/internal/core/db/migrations -seq $$name
 
 migrate-up:
-	migrate -path backend/internal/core/db/migrations -database "$(DB_URL)" -verbose up
+	migrate -path paimei-api/internal/core/db/migrations -database "$(DB_URL)" -verbose up
 
 migrate-down:
-	migrate -path backend/internal/core/db/migrations -database "$(DB_URL)" -verbose down
+	migrate -path paimei-api/internal/core/db/migrations -database "$(DB_URL)" -verbose down

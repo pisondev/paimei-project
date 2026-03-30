@@ -18,3 +18,8 @@ type CouponState struct {
 	UnlockedCoupons []Coupon  `json:"unlocked_coupons"`
 	TotalCoupons    int       `json:"total_coupons"`
 }
+
+type CouponInput struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}

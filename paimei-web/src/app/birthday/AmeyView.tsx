@@ -50,7 +50,7 @@ const BOTTOM_ICONS = [
   <path key="1" d="M7 8l-2 14h14l-2-14H7z"/>    // Skirt
 ];
 
-export default function AmeyView({ invitation, onSave, isPreview = false }: any) {
+export default function AmeyView({ invitation, onSave, onReset, isPreview = false }: any) {
   const savedOutfit = invitation?.amey_outfit || "dress|0|0";
   const [baseType, savedTopIdx, savedBotIdx] = savedOutfit.split("|");
 
@@ -67,8 +67,8 @@ export default function AmeyView({ invitation, onSave, isPreview = false }: any)
   const [loveMoreScale, setLoveMoreScale] = useState(1);
   const [isShaking, setIsShaking] = useState(false);
 
-  // --- FORM STATES ---
   const [showDialog, setShowDialog] = useState(false);
+  const [itineraryStep, setItineraryStep] = useState(0); // TAMBAHKAN INI
   const [noScale, setNoScale] = useState(1);
   const [yesScale, setYesScale] = useState(1);
   const [isDialogShaking, setIsDialogShaking] = useState(false);
@@ -91,6 +91,22 @@ export default function AmeyView({ invitation, onSave, isPreview = false }: any)
   const [botHue, setBotHue] = useState(initBotH);
   const [botLightness, setBotLightness] = useState(initBotL);
   const [botHexInput, setBotHexInput] = useState(initBotHex);
+
+  const handleReplay = () => {
+    if (isPreview) return alert("Preview mode reset!");
+    // Kembalikan semua state ke titik nol
+    setStoryState(1);
+    setShowDialog(false);
+    setItineraryStep(0);
+    setIsEditing(false);
+    setParaIdx(0);
+    setTypedText("");
+    setShowLoveBtns(false);
+    setTitleVisible(false);
+    
+    // Panggil fungsi API ke database
+    if (onReset) onReset();
+  };
 
   useEffect(() => { setTopHexInput(hslToHex(topHue, 100, topLightness)); }, [topHue, topLightness]);
   useEffect(() => { setBotHexInput(hslToHex(botHue, 100, botLightness)); }, [botHue, botLightness]);
@@ -294,121 +310,236 @@ export default function AmeyView({ invitation, onSave, isPreview = false }: any)
         <div className="bg-stone-800/40 backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] border border-stone-700/50 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden min-h-[400px] flex flex-col justify-center">
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-stone-600 rounded-full blur-[80px] opacity-30 pointer-events-none"></div>
           
-          {/* A. STATE DIALOG */}
-          {showDialog ? (
-            <div className="text-center animate-fade-in relative z-10 flex flex-col items-center">
-              <div className="w-20 h-20 bg-stone-900 border border-stone-700 text-stone-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <svg className="w-10 h-10 animate-pulse text-stone-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-              </div>
-              <h2 className="text-3xl font-serif text-white mb-3">An Evening to Remember</h2>
-              <p className="text-stone-400 mb-10 text-sm leading-relaxed max-w-sm">
-                I have prepared a little something special to celebrate your 20th birthday and our anniversary. Would you do me the honor of being my date?
+          {/* ANTI-GLITCH: Jeda Transisi sebelum Dialog Kertas Muncul */}
+          {storyState === 2 && !showDialog ? (
+            <div className="w-full h-full flex flex-col items-center justify-center min-h-[300px] opacity-50 animate-fade-in">
+              <svg className="w-10 h-10 animate-spin text-[#dcb484]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" /></svg>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-[#dcb484] animate-pulse">Unlocking The Vault...</p>
+            </div>
+          ) : 
+
+          /* A. STATE DIALOG */
+          showDialog ? (
+            <div className="text-center animate-fade-in relative z-10 flex flex-col items-center w-full">
+              
+              <h2 className="text-4xl font-serif text-white mb-2 drop-shadow-md">An Evening to Remember</h2>
+              <p className="text-stone-400 mb-8 text-sm max-w-sm mx-auto">
+                A special itinerary has been curated to celebrate your 20th birthday and our beautiful 4 years together.
               </p>
               
-              <div className="flex flex-row gap-4 items-center justify-center w-full max-w-[320px]">
-                {/* Pisahkan container Scale dan Shake */}
-                <div style={{ transform: `scale(${noScale})`, transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)', opacity: noScale > 0.1 ? 1 : 0, pointerEvents: noScale > 0.1 ? 'auto' : 'none' }}>
-                  <div className={isDialogShaking ? 'animate-shake-pure' : ''}>
-                    <button onClick={handleDeclineDateClick} className="w-full px-6 py-3.5 bg-transparent border border-stone-600 text-stone-500 rounded-full font-bold uppercase text-xs whitespace-nowrap">
-                      Uhmm..
-                    </button>
+              {/* KERTAS ITINERARY VINTAGE INTERAKTIF */}
+              <div 
+                onClick={() => {
+                  if (itineraryStep < 4) {
+                    setItineraryStep(prev => prev + 1);
+                    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate([30]);
+                  }
+                }}
+                className={`w-full max-w-sm mx-auto mb-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-[800ms] ease-in-out cursor-pointer rounded-3xl border border-[#dcb484]/50 ${itineraryStep === 0 ? 'p-8 min-h-[160px] flex items-center justify-center' : 'p-8'}`}
+                style={{
+                  backgroundColor: '#f4ecd8', 
+                  backgroundImage: 'radial-gradient(#e4cca7 1.5px, transparent 1.5px)', 
+                  backgroundSize: '16px 16px',
+                  color: '#4a3728'
+                }}
+              >
+                {/* STATE 0: Belum Dibuka */}
+                {itineraryStep === 0 && (
+                  <div className="text-center animate-fade-in flex flex-col items-center">
+                    <svg className="w-12 h-12 mb-4 text-[#a07855] opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    <h3 className="font-serif text-xl font-bold tracking-widest uppercase text-[#5c4033]">Top Secret</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest mt-4 text-[#8b5a2b] animate-pulse bg-[#f4ecd8] px-3 py-1 rounded-full border border-[#dcb484]">Tap to Unseal</p>
+                  </div>
+                )}
+
+                {/* STATE 1-4: Isi Itinerary */}
+                <div className={`transition-all duration-700 ease-in-out overflow-hidden ${itineraryStep > 0 ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <h3 className="font-serif text-2xl border-b border-[#c19a6b]/40 pb-4 mb-6 text-center font-bold text-[#4a3728]">The Itinerary</h3>
+                  <div className="space-y-0 text-left relative">
+                    
+                    {/* STEP 1: PICK UP */}
+                    <div className={`transition-all duration-700 ease-in-out overflow-hidden flex gap-4 items-start ${itineraryStep >= 1 ? 'max-h-32 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'}`}>
+                      <div className="flex flex-col items-center mt-1">
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#8b5a2b]"></div>
+                        <div className="w-px h-12 bg-[#c19a6b]/60 mt-1"></div>
+                      </div>
+                      <div className="pb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">17:00 WIB</p>
+                        <p className="font-bold text-[#3e2723] text-lg leading-tight">The Pick Up</p>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">Exclusive pick-up by Paisen. Please be ready.</p>
+                      </div>
+                    </div>
+
+                    {/* STEP 2: JOURNEY */}
+                    <div className={`transition-all duration-700 ease-in-out overflow-hidden flex gap-4 items-start ${itineraryStep >= 2 ? 'max-h-32 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'}`}>
+                      <div className="flex flex-col items-center mt-1">
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#8b5a2b]"></div>
+                        <div className="w-px h-12 bg-[#c19a6b]/60 mt-1"></div>
+                      </div>
+                      <div className="pb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">17:00 - 18:00 WIB</p>
+                        <p className="font-bold text-[#3e2723] text-lg leading-tight">Golden Hour Journey</p>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A relaxing drive to enjoy the sunset together.</p>
+                      </div>
+                    </div>
+
+                    {/* STEP 3: DINNER */}
+                    <div className={`transition-all duration-700 ease-in-out overflow-hidden flex gap-4 items-start ${itineraryStep >= 3 ? 'max-h-40 opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0'}`}>
+                      <div className="flex flex-col items-center mt-1">
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#8b5a2b] shadow-[0_0_8px_#8b5a2b]"></div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">18:00 - Onwards</p>
+                        <p className="font-bold text-[#3e2723] text-lg leading-tight">Dinner at FAVOR Heritage</p>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A romantic dinner to celebrate your special day. <br/>
+                          <a href="https://maps.app.goo.gl/n6Pr1BysvYTLQ4nw8" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 mt-2 text-[#8b5a2b] hover:text-[#d35400] transition-colors border-b border-[#8b5a2b] pb-0.5 font-bold">
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            View Location
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* PETUNJUK TAP */}
+                    <div className={`absolute bottom-0 right-0 transition-opacity duration-300 ${itineraryStep < 4 ? 'opacity-100' : 'opacity-0'}`}>
+                      <div className="text-[9px] uppercase tracking-widest text-[#8b5a2b] animate-pulse font-bold bg-[#f4ecd8] px-2">Tap to reveal next...</div>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* PERTANYAAN AJAKAN & TOMBOL */}
+              <div className={`transition-all duration-1000 w-full ${itineraryStep === 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none absolute -z-10'}`}>
+                <p className="text-[#dcb484] mb-6 font-serif italic text-xl">"Would you do me the honor of being my date?"</p>
                 
-                <div style={{ transform: `scale(${yesScale})`, transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }} className="z-10">
-                  <button onClick={() => { setShowDialog(false); setIsEditing(true); setStoryState(3); }} className="w-full px-8 py-3.5 bg-white text-stone-900 rounded-full font-bold uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-stone-200 active:scale-95 whitespace-nowrap">
-                    Yes, I'd Love To!
-                  </button>
+                <div className="flex flex-row gap-4 items-center justify-center w-full max-w-[320px] mx-auto">
+                  <div style={{ transform: `scale(${noScale})`, transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                    <div className={isDialogShaking ? 'animate-shake-pure' : ''}>
+                      <button onClick={handleDeclineDateClick} className="w-full px-6 py-3.5 bg-stone-800/50 border border-stone-600 text-stone-400 rounded-full font-bold uppercase text-xs hover:bg-stone-800 transition-colors whitespace-nowrap">
+                        Uhmm.. Let me think
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div style={{ transform: `scale(${yesScale})`, transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }} className="z-10">
+                    <button onClick={() => { setShowDialog(false); setIsEditing(true); setStoryState(3); }} className="w-full px-8 py-3.5 bg-white text-stone-900 rounded-full font-bold uppercase tracking-widest text-xs shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:bg-[#dcb484] active:scale-95 whitespace-nowrap transition-colors">
+                      Yes, I'd Love To!
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ) : 
           
-          /* B. STATE SUDAH ACCEPT & TIDAK EDITING */
+          /* B. STATE SUDAH ACCEPT & TIDAK EDITING (ITINERARY TETAP TAMPIL) */
           invitation?.is_accepted && !isEditing ? (
-            <div className="animate-fade-in relative z-10 flex flex-col h-full">
+            <div className="animate-fade-in relative z-10 flex flex-col h-full w-full items-center">
+              
               <div className="text-center mb-6">
-                <h3 className="text-3xl font-serif text-white mb-2">It's a Date! ❤️</h3>
-                <p className="text-stone-400 text-sm">Our outfits are perfectly coordinated. I can't wait to see you looking breathtakingly gorgeous on our special day.</p>
+                <h3 className="text-4xl font-serif text-[#dcb484] mb-2 drop-shadow-md">It's a Date! ❤️</h3>
+                <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
+                  The evening is set. I can't wait to see you looking breathtakingly gorgeous.
+                </p>
               </div>
 
-              <div className="bg-stone-900/50 p-5 rounded-2xl border border-stone-700/50 mb-6 space-y-4">
-                <div className="flex justify-between items-center border-b border-stone-700/50 pb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Location</span>
-                  <span className="font-serif text-sm text-white">{invitation?.location_dummy}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-stone-700/50 pb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Date</span>
-                  <span className="font-serif text-sm text-white">April 11, 2026</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Time</span>
-                  <span className="font-serif text-sm text-white">16:00 WIB</span>
+              {/* VIP TICKET PASS + ITINERARY RECAP */}
+              <div className="bg-stone-900/80 backdrop-blur-md p-6 rounded-[2rem] border border-[#c19a6b]/30 w-full max-w-sm shadow-[0_10px_30px_rgba(0,0,0,0.4)] mb-8 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#c19a6b] to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-[#c19a6b] rounded-full blur-[60px] opacity-10 pointer-events-none"></div>
+                
+                <h4 className="text-center font-serif text-lg text-[#dcb484] border-b border-stone-700/60 pb-3 mb-4 relative z-10">Confirmed Itinerary</h4>
+                
+                <div className="space-y-4 relative z-10">
+                  <div className="flex justify-between items-center">
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">17:00</span>
+                     <span className="text-xs text-stone-200 font-medium">The Pick Up</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">17:00 - 18:00</span>
+                     <span className="text-xs text-stone-200 font-medium">Golden Hour Journey</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-stone-700/60 pb-4">
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">18:00 - Onwards</span>
+                     <span className="text-xs text-[#dcb484] font-bold">FAVOR Heritage</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Date</span>
+                     <span className="font-mono text-sm tracking-widest text-[#c19a6b]">11 . 04 . 2026</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="flex justify-center items-end gap-6 mb-8 mt-2">
+              {/* ELEGANT OUTFIT SHOWCASE */}
+              <div className="flex justify-center items-center gap-6 md:gap-8 mb-8 w-full">
                 {/* Amey Model */}
-                <div className="flex flex-col items-center group">
-                  <div className="w-20 h-24 rounded-2xl bg-stone-800/80 border border-stone-600 flex items-center justify-center shadow-lg relative overflow-hidden transition-transform group-hover:scale-105">
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-32 rounded-t-[3rem] rounded-b-2xl bg-stone-900/80 border border-[#c19a6b]/40 flex items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-500 hover:border-[#c19a6b] hover:shadow-[0_10px_30px_rgba(193,154,107,0.3)] group">
                     {baseType === "dress" ? (
-                      <div className="absolute inset-0" style={{ backgroundColor: invitation.amey_top_color || topHexInput }}></div>
+                      <div className="absolute inset-0 transition-colors" style={{ backgroundColor: invitation.amey_top_color || topHexInput }}></div>
                     ) : (
                       <>
-                        <div className="w-full h-1/2 absolute top-0" style={{ backgroundColor: invitation.amey_top_color || topHexInput }}></div>
-                        <div className="w-full h-1/2 absolute bottom-0" style={{ backgroundColor: invitation.amey_bottom_color || botHexInput }}></div>
+                        <div className="w-full h-1/2 absolute top-0 transition-colors" style={{ backgroundColor: invitation.amey_top_color || topHexInput }}></div>
+                        <div className="w-full h-1/2 absolute bottom-0 transition-colors" style={{ backgroundColor: invitation.amey_bottom_color || botHexInput }}></div>
                       </>
                     )}
-                    <div className="absolute inset-0 bg-stone-900/10"></div>
+                    <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-colors"></div>
                     
                     {baseType === "dress" ? (
-                      <svg className="w-12 h-12 relative z-10 text-stone-900/80 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">{DRESS_ICONS[topIdx]}</svg> 
+                      <svg className="w-16 h-16 relative z-10 text-stone-900/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-transform" viewBox="0 0 24 24" fill="currentColor">{DRESS_ICONS[topIdx]}</svg> 
                     ) : (
-                      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
-                        <svg className="w-8 h-8 text-stone-900/80 drop-shadow-md -mb-3" viewBox="0 0 24 24" fill="currentColor">{TOP_ICONS[topIdx]}</svg>
-                        <svg className="w-8 h-8 text-stone-900/80 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">{BOTTOM_ICONS[botIdx]}</svg>
+                      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full group-hover:scale-105 transition-transform">
+                        <svg className="w-10 h-10 text-stone-900/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] -mb-4" viewBox="0 0 24 24" fill="currentColor">{TOP_ICONS[topIdx]}</svg>
+                        <svg className="w-10 h-10 text-stone-900/90 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24" fill="currentColor">{BOTTOM_ICONS[botIdx]}</svg>
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-stone-500 mt-3">Amey</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#c19a6b] mt-4 bg-stone-900/50 px-3 py-1 rounded-full border border-stone-800">Amey</span>
                 </div>
                 
-                <div className="pb-8 text-stone-600">
+                {/* Heart Connector */}
+                <div className="pb-8 text-[#c19a6b]/70">
                   <svg className="w-6 h-6 animate-pulse" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
 
                 {/* Paisen Model */}
-                <div className="flex flex-col items-center group">
-                  <div className="w-20 h-24 rounded-2xl bg-stone-800/80 border border-stone-600 flex items-center justify-center shadow-lg relative overflow-hidden transition-transform group-hover:scale-105">
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-32 rounded-t-[3rem] rounded-b-2xl bg-stone-900/80 border border-[#c19a6b]/40 flex items-center justify-center shadow-[0_10px_20px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-500 hover:border-[#c19a6b] hover:shadow-[0_10px_30px_rgba(193,154,107,0.3)] group">
                     {invitation.paisen_outfit === "suit" ? (
-                      <div className="absolute inset-0" style={{ backgroundColor: invitation.paisen_top_color || "#1c1917" }}></div>
+                      <div className="absolute inset-0 transition-colors" style={{ backgroundColor: invitation.paisen_top_color || "#1c1917" }}></div>
                     ) : (
                       <>
-                        <div className="w-full h-1/2 absolute top-0" style={{ backgroundColor: invitation.paisen_top_color || "#1c1917" }}></div>
-                        <div className="w-full h-1/2 absolute bottom-0" style={{ backgroundColor: invitation.paisen_bottom_color || "#1c1917" }}></div>
+                        <div className="w-full h-1/2 absolute top-0 transition-colors" style={{ backgroundColor: invitation.paisen_top_color || "#1c1917" }}></div>
+                        <div className="w-full h-1/2 absolute bottom-0 transition-colors" style={{ backgroundColor: invitation.paisen_bottom_color || "#1c1917" }}></div>
                       </>
                     )}
-                    <div className="absolute inset-0 bg-stone-900/10"></div>
+                    <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-transparent transition-colors"></div>
+                    
                     {invitation.paisen_outfit === "suit" 
-                      ? <svg className="w-12 h-12 relative z-10 text-stone-900/60 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 6v12l8 4 8-4V6l-8-4zm0 2.5l5 2.5-5 5-5-5 5-2.5z"/></svg> 
-                      : <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
-                          <svg className="w-8 h-8 text-stone-900/60 drop-shadow-md -mb-3" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h-4L6 8v13h12V8l-4-5z"/></svg>
-                          <svg className="w-8 h-8 text-stone-900/60 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor"><path d="M6 22h4v-8h4v8h4V8H6v14z"/></svg>
+                      ? <svg className="w-16 h-16 relative z-10 text-stone-900/70 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 6v12l8 4 8-4V6l-8-4zm0 2.5l5 2.5-5 5-5-5 5-2.5z"/></svg> 
+                      : <div className="relative z-10 flex flex-col items-center justify-center w-full h-full group-hover:scale-105 transition-transform">
+                          <svg className="w-10 h-10 text-stone-900/70 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)] -mb-4" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h-4L6 8v13h12V8l-4-5z"/></svg>
+                          <svg className="w-10 h-10 text-stone-900/70 drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24" fill="currentColor"><path d="M6 22h4v-8h4v8h4V8H6v14z"/></svg>
                         </div>
                     }
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-stone-500 mt-3">Paisen</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#c19a6b] mt-4 bg-stone-900/50 px-3 py-1 rounded-full border border-stone-800">Paisen</span>
                 </div>
               </div>
 
-              <div className="mt-auto text-center">
-                <button onClick={() => setIsEditing(true)} className="px-6 py-2 rounded-full border border-stone-600 text-stone-400 hover:text-white hover:bg-stone-800 transition-all text-xs font-bold uppercase tracking-widest">
+              <div className="mt-auto w-full flex flex-col gap-4 text-center items-center">
+                <button onClick={() => setIsEditing(true)} className="px-8 py-3.5 rounded-full border border-[#c19a6b]/50 text-[#dcb484] hover:text-stone-900 hover:bg-[#dcb484] transition-all duration-300 text-xs font-bold uppercase tracking-widest shadow-lg active:scale-95">
                   Refine My Look
+                </button>
+                
+                {/* TOMBOL REPLAY BARU */}
+                <button onClick={handleReplay} className="text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-[#c19a6b] transition-colors flex items-center gap-1.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+                  Relive The Magic
                 </button>
               </div>
             </div>
           ) : 
-          
+                    
           /* C. STATE FORM SETUP WARNA OUTFIT */
           (
             <div className="animate-fade-in relative z-10">

@@ -127,3 +127,101 @@ func RedeemCoupon(db *sql.DB) fiber.Handler {
 		return c.JSON(fiber.Map{"message": "Kupon berhasil di-redeem!"})
 	}
 }
+
+// ==========================================
+// ADMIN ROUTES (PAISEN ONLY)
+// ==========================================
+
+// 1. Tambah Kupon Baru
+func AddCoupon(db *sql.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var input CouponInput
+		if err := c.BodyParser(&input); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Input tidak valid"})
+		}
+
+		_, err := db.Exec(
+			"INSERT INTO coupons (title, description) VALUES ($1, $2)",
+			input.Title, input.Description,
+		)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan kupon"})
+		}
+
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Kupon berhasil ditambahkan!"})
+	}
+}
+
+// 2. Modifikasi Kupon
+func UpdateCoupon(db *sql.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		var input CouponInput
+		if err := c.BodyParser(&input); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Input tidak valid"})
+		}
+
+		_, err := db.Exec(
+			"UPDATE coupons SET title = $1, description = $2 WHERE id = $3",
+			input.Title, input.Description, id,
+		)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengubah kupon"})
+		}
+
+		return c.JSON(fiber.Map{"message": "Kupon berhasil diperbarui!"})
+	}
+}
+
+// 3. Hapus Kupon
+func DeleteCoupon(db *sql.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		_, err := db.Exec("DELETE FROM coupons WHERE id = $1", id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menghapus kupon"})
+		}
+
+		return c.JSON(fiber.Map{"message": "Kupon berhasil dihapus!"})
+	}
+}
+
+// 4. Ambil SEMUA Kupon untuk Dashboard Admin
+func GetAllCouponsAdmin(db *sql.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Mengambil semua kupon, baik yang drawn_week-nya ada maupun NULL
+		rows, err := db.Query("SELECT id, title, description, is_redeemed, drawn_week FROM coupons ORDER BY id ASC")
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengambil semua kupon"})
+		}
+		defer rows.Close()
+
+		var allCoupons []fiber.Map
+		for rows.Next() {
+			var id int
+			var title, description string
+			var isRedeemed bool
+			var drawnWeek sql.NullInt32 // Gunakan NullInt32 karena kupon baru nilai drawn_week-nya NULL
+
+			if err := rows.Scan(&id, &title, &description, &isRedeemed, &drawnWeek); err != nil {
+				continue
+			}
+
+			coupon := fiber.Map{
+				"id":          id,
+				"title":       title,
+				"description": description,
+				"is_redeemed": isRedeemed,
+				"drawn_week":  nil,
+			}
+			if drawnWeek.Valid {
+				coupon["drawn_week"] = drawnWeek.Int32
+			}
+
+			allCoupons = append(allCoupons, coupon)
+		}
+
+		return c.JSON(allCoupons)
+	}
+}

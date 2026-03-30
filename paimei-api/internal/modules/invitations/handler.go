@@ -63,3 +63,15 @@ func UpdatePaisenOutfit(db *sql.DB) fiber.Handler {
 		return c.JSON(fiber.Map{"message": "Outfit Paisen diupdate!"})
 	}
 }
+
+// Reset Invitation (Agar Amey bisa mengulang experience)
+func ResetInvitation(db *sql.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Ubah is_accepted kembali menjadi false untuk undangan ID 1
+		_, err := db.Exec("UPDATE invitations SET is_accepted = false WHERE id = 1")
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mereset undangan"})
+		}
+		return c.JSON(fiber.Map{"message": "Experience di-reset!"})
+	}
+}

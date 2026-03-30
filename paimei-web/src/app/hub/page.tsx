@@ -34,7 +34,7 @@ export default function HubPage() {
     const timer = setTimeout(() => setShowContent(true), 100);
 
     // 4. Logika Countdown Ulang Tahun (Target: 31 Maret 2026, 00:00 WIB)
-    const targetDate = new Date("2026-03-31T00:00:00+07:00").getTime();
+    const targetDate = new Date("2026-03-30T22:29:00+07:00").getTime();
     
     const interval = setInterval(() => {
       const now = new Date().getTime();
@@ -65,7 +65,10 @@ export default function HubPage() {
   }, []);
 
   const handleBirthdayClick = () => {
-    if (isBirthday) {
+    // KUNCI MASTER: Jika yang login adalah Paisen, langsung buka!
+    const isAdmin = currentUser.toLowerCase() === "paisen";
+
+    if (isBirthday || isAdmin) {
       router.push("/birthday");
     } else {
       addToast("Patience... the time hasn't come yet!", "warning");

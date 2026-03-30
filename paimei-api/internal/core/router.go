@@ -25,13 +25,20 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	// Semua route di dalam grup "protected" ini akan dicegat oleh middleware.Protected()
 	protected := api.Group("/", middleware.Protected())
 
-	// Routes Coupons
+	// Routes Coupons (Amey & Paisen)
 	protected.Get("/coupons/state", coupons.GetCouponState(db))
 	protected.Post("/coupons/draw", coupons.DrawRandomCoupon(db))
 	protected.Post("/coupons/:id/redeem", coupons.RedeemCoupon(db))
+
+	// Routes Admin Coupons (Paisen Only)
+	protected.Post("/coupons/admin", coupons.AddCoupon(db))
+	protected.Put("/coupons/admin/:id", coupons.UpdateCoupon(db))
+	protected.Delete("/coupons/admin/:id", coupons.DeleteCoupon(db))
 
 	// Routes Invitations
 	protected.Get("/invitation", invitations.GetInvitation(db))
 	protected.Post("/invitation/accept", invitations.AcceptInvitation(db))
 	protected.Post("/invitation/paisen", invitations.UpdatePaisenOutfit(db))
+	protected.Get("/coupons/admin", coupons.GetAllCouponsAdmin(db))
+	protected.Post("/invitation/reset", invitations.ResetInvitation(db))
 }

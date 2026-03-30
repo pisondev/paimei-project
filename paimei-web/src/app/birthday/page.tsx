@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
+import { fetchAPI } from "@/lib/api";
 
 // Import Komponen yang baru kita buat
 import AmeyView from "./AmeyView";
@@ -39,26 +40,29 @@ export default function BirthdayPageWrapper() {
   }, []);
 
   const fetchInvitation = async () => {
-    try {
-      const res = await fetch("http://localhost:8080/api/invitation");
+  try {
+    const res = await fetchAPI("/invitation"); // UBAH MENJADI INI
+    if (res.ok) {
       const data = await res.json();
       setInvitation(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) { console.error(error); } 
+  finally { setLoading(false); }
+};
 
   const handleBack = () => {
     setIsExiting(true);
     setTimeout(() => router.push("/hub"), 600);
   };
 
+  // Pastikan kamu meng-import fetchAPI di paling atas file:
+// import { fetchAPI } from "@/lib/api";
+
   const saveAmey = async (payload: any) => {
     try {
-      const res = await fetch("http://localhost:8080/api/invitation/accept", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      const res = await fetchAPI("/invitation/accept", {
+        method: "POST", 
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         addToast("Outfit and Date Saved!", "success");
@@ -67,10 +71,21 @@ export default function BirthdayPageWrapper() {
     } catch (error) { addToast("Failed to save", "error"); }
   };
 
+  const resetAmey = async () => {
+    try {
+      const res = await fetchAPI("/invitation/reset", { method: "POST" });
+      if (res.ok) {
+        addToast("Time rewound! The magic is ready to be replayed.", "success");
+        fetchInvitation(); // Tarik ulang data dari database
+      }
+    } catch (error) { addToast("Failed to rewind time", "error"); }
+  };
+
   const savePaisen = async (payload: any) => {
     try {
-      const res = await fetch("http://localhost:8080/api/invitation/paisen", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      const res = await fetchAPI("/invitation/paisen", {
+        method: "POST", 
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         addToast("Paisen's outfit updated successfully!", "success");
@@ -117,7 +132,7 @@ export default function BirthdayPageWrapper() {
       {/* RENDER VIEW BERDASARKAN USER */}
       <div className="relative z-10 w-full h-full">
         {isAmey ? (
-          <AmeyView invitation={invitation} onSave={saveAmey} />
+          <AmeyView invitation={invitation} onSave={saveAmey} onReset={resetAmey} />
         ) : (
           <PaisenView invitation={invitation} onSavePaisen={savePaisen} />
         )}

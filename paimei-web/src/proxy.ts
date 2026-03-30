@@ -6,13 +6,28 @@ export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   const isDev = process.env.NODE_ENV === 'development';
+  const baseUrl = isDev ? 'http://localhost:3000' : 'https://paimei.tierratie.com';
 
-  // Tentukan base URL secara dinamis
-  const baseUrl = isDev 
-    ? 'http://localhost:3000' 
-    : 'https://paimei.tierratie.com';
+  // ==========================================
+  // HACK: DECODE JWT UNTUK MENCARI TAHU ROLE
+  // ==========================================
+  let isAdmin = false;
+  if (token) {
+    try {
+      // Token JWT terdiri dari 3 bagian yang dipisah titik. Bagian ke-2 adalah payload (data).
+      const payloadBase64 = token.split('.')[1];
+      // Decode dari Base64 ke teks JSON (atob aman digunakan di Next.js Edge)
+      const decodedJson = atob(payloadBase64);
+      
+      // Jika di dalam data token ada kata 'paisen' atau 'admin', jadikan dia Admin
+      if (decodedJson.toLowerCase().includes('paisen') || decodedJson.toLowerCase().includes('admin')) {
+        isAdmin = true;
+      }
+    } catch (e) {
+      console.error("Gagal membaca isi token", e);
+    }
+  }
 
-  // Daftar halaman yang wajib login
   const protectedPaths = ['/hub', '/anniversary', '/coupons', '/birthday'];
   const isProtected = protectedPaths.some(p => pathname.startsWith(p));
 
@@ -26,13 +41,14 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/hub', baseUrl));
   }
 
-  // 3. Logika TIME-GATE KHUSUS BIRTHDAY
+  // 3. Logika TIME-GATE KHUSUS BIRTHDAY DENGAN BYPASS ADMIN
   if (pathname.startsWith('/birthday')) {
     const now = new Date();
     // Kunci sampai 31 Maret 2026, 00:00:00 WIB
-    const unlockDate = new Date("2026-03-31T00:00:00+07:00"); 
+    const unlockDate = new Date("2026-03-30T22:29:00+07:00"); 
 
-    if (now < unlockDate) {
+    // JIKA BUKAN ADMIN DAN WAKTU BELUM TIBA -> TENDANG KE HUB
+    if (!isAdmin && now < unlockDate) {
       return NextResponse.redirect(new URL('/hub', baseUrl));
     }
   }
@@ -55,5 +71,6 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Pastikan proxy mencegat rute-rute ini
   matcher: ['/', '/hub/:path*', '/anniversary/:path*', '/coupons/:path*', '/birthday/:path*'],
 };
