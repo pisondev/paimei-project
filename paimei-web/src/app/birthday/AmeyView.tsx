@@ -366,7 +366,7 @@ export default function AmeyView({ invitation, onSave, onReset, isPreview = fals
                       <div className="pb-2">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">17:00 WIB</p>
                         <p className="font-bold text-[#3e2723] text-lg leading-tight">The Pick Up</p>
-                        <p className="text-sm text-[#5d4037] leading-tight mt-1">Exclusive pick-up by Paisen. Please be ready.</p>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">Exclusive pick-up by paisen. Please be ready.</p>
                       </div>
                     </div>
 
@@ -379,7 +379,7 @@ export default function AmeyView({ invitation, onSave, onReset, isPreview = fals
                       <div className="pb-2">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">17:00 - 18:00 WIB</p>
                         <p className="font-bold text-[#3e2723] text-lg leading-tight">Golden Hour Journey</p>
-                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A relaxing drive to enjoy the sunset together.</p>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A relaxing ride to enjoy the sunset together.</p>
                       </div>
                     </div>
 
@@ -391,7 +391,7 @@ export default function AmeyView({ invitation, onSave, onReset, isPreview = fals
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#a0522d]">18:00 - Onwards</p>
                         <p className="font-bold text-[#3e2723] text-lg leading-tight">Dinner at FAVOR Heritage</p>
-                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A romantic dinner to celebrate your special day. <br/>
+                        <p className="text-sm text-[#5d4037] leading-tight mt-1">A romantic dinner to celebrate amey's special day. <br/>
                           <a href="https://maps.app.goo.gl/n6Pr1BysvYTLQ4nw8" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 mt-2 text-[#8b5a2b] hover:text-[#d35400] transition-colors border-b border-[#8b5a2b] pb-0.5 font-bold">
                             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             View Location
