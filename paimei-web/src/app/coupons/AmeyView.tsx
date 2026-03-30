@@ -143,7 +143,7 @@ export default function AmeyView() {
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           Sanctuary
         </button>
-        <h1 className="text-2xl md:text-3xl font-serif text-stone-800 uppercase tracking-widest">The Vault</h1>
+        <h1 className="text-2xl md:text-3xl font-serif text-stone-800 uppercase tracking-widest">The Coupons</h1>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-16 pb-20">
@@ -190,7 +190,7 @@ export default function AmeyView() {
               </div>
             </div>
           ))}
-          {state?.unlocked_coupons?.length === 0 && <div className="pl-8 md:pl-12 text-stone-400 italic">The vault is empty. Unveil your first surprise.</div>}
+          {state?.unlocked_coupons?.length === 0 && <div className="pl-8 md:pl-12 text-stone-400 italic">The Coupons is empty. Unveil your first surprise.</div>}
         </div>
 
         <div className="pt-12 border-t border-stone-200 text-center space-y-6">

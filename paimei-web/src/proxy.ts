@@ -45,7 +45,7 @@ export default function proxy(request: NextRequest) {
   if (pathname.startsWith('/birthday')) {
     const now = new Date();
     // Kunci sampai 31 Maret 2026, 00:00:00 WIB
-    const unlockDate = new Date("2026-03-30T22:29:00+07:00"); 
+    const unlockDate = new Date("2026-03-31T00:00:00+07:00"); 
 
     // JIKA BUKAN ADMIN DAN WAKTU BELUM TIBA -> TENDANG KE HUB
     if (!isAdmin && now < unlockDate) {
