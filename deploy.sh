@@ -1,4 +1,3 @@
-  GNU nano 7.2                                                                              deploy.sh                                                                                        
 #!/bin/bash
 set -e
 echo "🚀 Memulai Update Project Paimei..."
