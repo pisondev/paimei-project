@@ -27,28 +27,13 @@ func GetCouponState(db *sql.DB) fiber.Handler {
 		now := time.Now().In(getWIBLocation())
 		startDate := getAnniversaryStartDate()
 
-		var currentWeek int
-		var nextWeekStart time.Time
-
-		// Hitung minggu berjalan
-		if now.Before(startDate) {
-			currentWeek = 0
-			nextWeekStart = startDate
-		} else {
-			duration := now.Sub(startDate)
-			days := int(duration.Hours() / 24)
-			currentWeek = (days / 7) + 1
-			nextWeekStart = startDate.AddDate(0, 0, currentWeek*7)
-		}
-
-		// Ambil semua kupon yang sudah terbuka
+		// 1. Ambil semua kupon yang sudah terbuka
 		rows, err := db.Query("SELECT id, title, description, is_redeemed, drawn_week, unlocked_at FROM coupons WHERE unlocked_at IS NOT NULL ORDER BY drawn_week ASC")
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
 		defer rows.Close()
 
-		// KODE BARU:
 		unlockedCoupons := []Coupon{}
 		for rows.Next() {
 			var coupon Coupon
@@ -58,15 +43,22 @@ func GetCouponState(db *sql.DB) fiber.Handler {
 			unlockedCoupons = append(unlockedCoupons, coupon)
 		}
 
-		// Hitung total kupon di database
+		// 2. Hitung jumlah kupon yang sudah dipegang Amey
+		unlockedCount := len(unlockedCoupons)
+
+		// KUNCI LOGIKA BARU: Tentukan jadwal berdasarkan jumlah kupon yang dimiliki
+		nextWeekStart := startDate.AddDate(0, 0, unlockedCount*7)
+
+		// 3. Hitung total kupon di database
 		var totalCoupons int
 		db.QueryRow("SELECT COUNT(*) FROM coupons").Scan(&totalCoupons)
 
-		unlockedCount := len(unlockedCoupons)
+		// 4. Amey bisa gacha jika waktu saat ini >= jadwal kupon berikutnya,
+		// DAN masih ada sisa kupon di database yang belum dibuka.
+		canDraw := (now.After(nextWeekStart) || now.Equal(nextWeekStart)) && (unlockedCount < totalCoupons)
 
-		// Bisa gacha jika jumlah kupon terbuka lebih kecil dari minggu saat ini,
-		// DAN masih ada sisa kupon yang belum dibuka.
-		canDraw := (unlockedCount < currentWeek) && (unlockedCount < totalCoupons)
+		// Tentukan currentWeek untuk tampilan UI
+		currentWeek := unlockedCount + 1
 
 		return c.JSON(CouponState{
 			CurrentWeek:     currentWeek,
