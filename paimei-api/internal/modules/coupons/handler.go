@@ -19,7 +19,7 @@ func getWIBLocation() *time.Location {
 
 // Tanggal rilis awal (29 Maret 2026 jam 00:00:00 WIB)
 func getAnniversaryStartDate() time.Time {
-	return time.Date(2026, time.March, 27, 0, 0, 0, 0, getWIBLocation())
+	return time.Date(2026, time.March, 29, 0, 0, 0, 0, getWIBLocation())
 }
 
 func GetCouponState(db *sql.DB) fiber.Handler {
