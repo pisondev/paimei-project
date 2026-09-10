@@ -1,0 +1,17 @@
+# Kredensial. JANGAN pernah di-commit.
+#
+# Password database sempat tertulis langsung di docker-compose.yaml dan ikut terpublikasi
+# di repo ini, sementara portnya terbuka ke internet. Berkas ini mencegah pengulangannya.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Data database (bind mount ./db-data)
+db-data/
+
+# Artefak build
+node_modules/
+.next/
+dist/
+*.log

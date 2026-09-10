@@ -3,24 +3,48 @@ services:
   paimei-db:
     image: postgres:16-alpine
     container_name: paimei-db-container
+    # Tanpa restart policy, container yang mati sekali akan tetap mati sampai ada yang
+    # menyadarinya. Database ini pernah mati 5 Mei 2026 dan baru ketahuan empat bulan
+    # kemudian, sementara paimei-api restart tanpa henti karena tidak bisa menemukannya.
+    restart: unless-stopped
     environment:
       POSTGRES_USER: user_paimei
-      POSTGRES_PASSWORD: dbpaimei123  
+      # Password TIDAK ditulis di sini. Berkas ini publik di GitHub, dan password lama
+      # (`dbpaimei123`) sempat ikut terpublikasi sementara port 5435 terbuka ke internet —
+      # lognya menunjukkan percobaan brute-force dari luar. Nilainya sekarang diambil dari
+      # `.env` yang gitignored; lihat `.env.example`.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD belum diset, salin .env.example jadi .env}
       POSTGRES_DB: paimei_db
-    ports:
-      - "5435:5432" # PORT BARU
+    # TIDAK ADA `ports:` di sini, dan itu disengaja. paimei-api menghubungi database lewat
+    # nama jaringan Docker (`DB_HOST=paimei-db`, `DB_PORT=5432`), jadi port di host tidak
+    # pernah dibutuhkan. Sebelumnya `5435:5432` mengikat ke 0.0.0.0 alias terbuka ke seluruh
+    # internet — dan port yang dipublikasikan Docker MENEMBUS ufw, jadi firewall tidak
+    # melindunginya. Kalau suatu saat perlu akses dari luar container, pakai SSH tunnel:
+    #   ssh -L 5435:localhost:5435 vps-hestia
+    # setelah menambahkan `127.0.0.1:5435:5432` di sini, bukan `5435:5432`.
     volumes:
       - ./db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_paimei -d paimei_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 2. BACKEND API (Go Fiber)
   paimei-api:
     build: ./paimei-api
     container_name: paimei-api-container
-    restart: always
+    restart: unless-stopped
+    # 127.0.0.1 WAJIB. Tanpa prefix ini Docker mengikat ke 0.0.0.0 dan port langsung
+    # terjangkau dari internet, menembus ufw. Trafik publik masuk lewat nginx Hestia
+    # (api-paimei.tierratie.com) yang mem-proxy ke port loopback ini.
     ports:
-      - "3006:3000" # PORT BARU UNTUK API
+      - "127.0.0.1:3006:3000"
     depends_on:
-      - paimei-db
+      paimei-db:
+        # Menunggu database benar-benar siap, bukan sekadar containernya ada. Tanpa ini
+        # API bisa masuk crash-loop saat database lambat naik atau sedang bermasalah.
+        condition: service_healthy
     env_file:
       - ./paimei-api/.env
 
@@ -28,8 +52,8 @@ services:
   paimei-web:
     build: ./paimei-web
     container_name: paimei-web-container
-    restart: always
+    restart: unless-stopped
     ports:
-      - "3008:3000" # PORT BARU UNTUK WEB
+      - "127.0.0.1:3008:3000"
     env_file:
       - ./paimei-web/.env.local
