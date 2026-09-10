@@ -38,8 +38,11 @@ services:
     # 127.0.0.1 WAJIB. Tanpa prefix ini Docker mengikat ke 0.0.0.0 dan port langsung
     # terjangkau dari internet, menembus ufw. Trafik publik masuk lewat nginx Hestia
     # (api-paimei.tierratie.com) yang mem-proxy ke port loopback ini.
+    # Port 3006 sudah diambil tierratie-grafana selagi paimei mati empat bulan, jadi
+    # paimei-api pindah ke 3016. Nilai ini harus sama dengan proxy_pass di nginx Hestia
+    # untuk api-paimei.tierratie.com.
     ports:
-      - "127.0.0.1:3006:3000"
+      - "127.0.0.1:3016:3000"
     depends_on:
       paimei-db:
         # Menunggu database benar-benar siap, bukan sekadar containernya ada. Tanpa ini
